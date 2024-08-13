@@ -1,5 +1,6 @@
 package-lock.json
 public/
+.env
 
 # dependencies
 /node_modules

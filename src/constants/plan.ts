@@ -1,12 +1,12 @@
 export enum BudgetType {
-  cheap,
-  moderate,
-  luxury,
+  CHEAP = "cheap",
+  MODERATE = "moderate",
+  LUXURY = "luxury",
 }
 
 export enum AccompayType {
-  solo,
-  couple,
-  family,
-  friend,
+  SOLO = "alone",
+  COUPLE = "couple",
+  FAMILY = "family",
+  FRIEND = "friend",
 }

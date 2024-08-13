@@ -1,4 +1,4 @@
-import CreatePlanForm from "./_create-plan-form";
+import CreatePlanScreen from "./_component/create-plan-screen";
 
 export default function CreatePlan() {
   return (
@@ -6,7 +6,7 @@ export default function CreatePlan() {
       <h1 className="my-10 text-xl font-semibold">Let's make plan</h1>
 
       <section>
-        <CreatePlanForm />
+        <CreatePlanScreen />
       </section>
     </main>
   );

@@ -1,9 +1,11 @@
 "use client";
 
+import { ChangeEvent, useEffect, useState } from "react";
+import createTravelPlanAction from "@/action/create-plan/create-travel-plan";
 import { AccompayType, BudgetType } from "@/constants/plan";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { ChangeEvent, useState } from "react";
+import { toast } from "sonner";
 
 interface BudgetMenu {
   type: BudgetType;
@@ -13,17 +15,17 @@ interface BudgetMenu {
 
 const budgetMenus: BudgetMenu[] = [
   {
-    type: BudgetType.cheap,
+    type: BudgetType.CHEAP,
     emoji: "💰",
     label: "CHEAP",
   },
   {
-    type: BudgetType.moderate,
+    type: BudgetType.MODERATE,
     emoji: "💵",
     label: "MODREATE",
   },
   {
-    type: BudgetType.luxury,
+    type: BudgetType.LUXURY,
     emoji: "💸",
     label: "LUXURY",
   },
@@ -37,34 +39,42 @@ interface AccompanyMenu {
 
 const accompanyMenus: AccompanyMenu[] = [
   {
-    type: AccompayType.solo,
+    type: AccompayType.SOLO,
     label: "SOLO",
     emoji: "🙋🏻‍♂️",
   },
   {
-    type: AccompayType.couple,
+    type: AccompayType.COUPLE,
     label: "COUPLE",
     emoji: "👩‍❤️‍👨",
   },
   {
-    type: AccompayType.family,
+    type: AccompayType.FAMILY,
     label: "FAMILY",
     emoji: "🧑‍🧑‍🧒🏡",
   },
   {
-    type: AccompayType.friend,
+    type: AccompayType.FRIEND,
     label: "FRIEND",
     emoji: "👭",
   },
 ];
 
-export default function CreatePlanForm() {
+export default function CreatePlanScreen() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [destination, setDestination] = useState<string>("");
   const [days, setDays] = useState<number>(1);
-  const [budgetType, setBudgetType] = useState<BudgetType>(BudgetType.cheap);
-  const [accompayType, setAccompayType] = useState<AccompayType>(
-    AccompayType.solo
+  const [budgetType, setBudgetType] = useState<BudgetType>(BudgetType.CHEAP);
+  const [accompanyType, setAccompanyType] = useState<AccompayType>(
+    AccompayType.SOLO
   );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   const handleDestination = (e: ChangeEvent<HTMLInputElement>) => {
     setDestination(e.target.value);
@@ -79,14 +89,44 @@ export default function CreatePlanForm() {
   };
 
   const handleAccompanyType = (type: AccompayType) => () => {
-    setAccompayType(type);
+    setAccompanyType(type);
   };
 
-  // TODO
-  const handleRecommend = () => {};
+  const handleSubmit = async () => {
+    // validation
+    if (!destination) {
+      toast.warning("destination is not given", {
+        position: "top-center",
+      });
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const res = await createTravelPlanAction({
+        destination,
+        days,
+        budgetType,
+        accompanyType,
+      });
+      // TODO : show result
+    } catch (error) {
+      console.error(error);
+      toast.error("error occurs", {
+        position: "top-center",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div>
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-5 border-r-5 border-teal-500"></div>
+        </div>
+      )}
+
       <ul className="flex flex-col gap-y-5 px-5">
         <li className="shadow-md px-5 py-3 rounded-lg flex flex-col gap-y-3">
           <label className="font-bold">DESTINATION</label>
@@ -110,21 +150,20 @@ export default function CreatePlanForm() {
           <label className="font-bold">Budget</label>
           <ul className="flex gap-x-3 justify-start">
             {budgetMenus.map((menu) => (
-              <li key={menu.type}>
+              <li
+                key={menu.type}
+                className={`${
+                  menu.type === budgetType
+                    ? "text-teal-600 font-bold shadow-lg"
+                    : "text-slate-600 font-thin"
+                } `}
+              >
                 <button
                   onClick={handleBudgetType(menu.type)}
                   className="p-3 shadow-md flex gap-x-2"
                 >
                   <i>{menu.emoji}</i>
-                  <label
-                    className={`${
-                      menu.type === budgetType
-                        ? "text-teal-600 font-bold"
-                        : "text-slate-600 font-thin"
-                    } `}
-                  >
-                    {menu.label}
-                  </label>
+                  <label>{menu.label}</label>
                 </button>
               </li>
             ))}
@@ -135,21 +174,20 @@ export default function CreatePlanForm() {
           <label className="font-bold">Accompay</label>
           <ul className="flex gap-x-3 justify-start">
             {accompanyMenus.map((menu) => (
-              <li key={menu.type}>
+              <li
+                key={menu.type}
+                className={`${
+                  menu.type === accompanyType
+                    ? "text-teal-600 font-bold shadow-lg"
+                    : "text-slate-600 font-thin"
+                }`}
+              >
                 <button
                   onClick={handleAccompanyType(menu.type)}
                   className="p-3 shadow-md flex gap-x-2"
                 >
                   <i>{menu.emoji}</i>
-                  <label
-                    className={`${
-                      menu.type === accompayType
-                        ? "text-teal-600 font-bold"
-                        : "text-slate-600 font-thin"
-                    } `}
-                  >
-                    {menu.label}
-                  </label>
+                  <label>{menu.label}</label>
                 </button>
               </li>
             ))}
@@ -159,11 +197,12 @@ export default function CreatePlanForm() {
 
       <div className="mt-10 w-full">
         <Button
+          disabled={isLoading}
           className="w-full text-teal-600 font-extrabold text-xl"
-          variant="shadow"
-          onClick={handleRecommend}
+          variant={isLoading ? "ghost" : "ghost"}
+          onClick={handleSubmit}
         >
-          Recommend
+          {isLoading ? "Loadings..." : "Recommend"}
         </Button>
       </div>
     </div>
